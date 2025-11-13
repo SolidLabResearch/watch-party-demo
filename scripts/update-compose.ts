@@ -81,6 +81,28 @@ export function updateCompose(composePath: string, dataDir: string) {
       ].join('\n'),
     };
 
+    // Forward host aggregator into CSS namespace at localhost:5000
+    compose.services[`aggregator_loopback_in_${cssName}`] = {
+      image: 'alpine/socat',
+      network_mode: `service:${cssName}`,
+      depends_on: [ cssName ],
+      command: [
+        'tcp-listen:5000,fork,reuseaddr,bind=127.0.0.1',
+        'tcp-connect:${HOST_GATEWAY_IP:-172.17.0.1}:5000',
+      ].join('\n'),
+    };
+
+    // Forward host aggregator into UMA namespace at localhost:5000
+    compose.services[`aggregator_loopback_in_${umaName}`] = {
+      image: 'alpine/socat',
+      network_mode: `service:${umaName}`,
+      depends_on: [ umaName ],
+      command: [
+        'tcp-listen:5000,fork,reuseaddr,bind=127.0.0.1',
+        'tcp-connect:${HOST_GATEWAY_IP:-172.17.0.1}:5000',
+      ].join('\n'),
+    };
+
     // If a UI service exists, expose it on localhost:8080 inside each CSS container too
     if (compose.services.ui) {
       compose.services[`ui_loopback_${cssName}`] = {

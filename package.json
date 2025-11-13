@@ -6,7 +6,7 @@
   "scripts": {
     "generate": "ts-node --esm generator/generate.ts",
     "trailers": "ts-node --esm scripts/validateTrailers.ts",
-    "start": "docker compose up -d",
+    "start": "docker compose up -d && sleep 5 && cd aggregator && go run . --webid http://localhost:3000/user1/profile/card#me --password password --email user1@example.org",
     "stop": "docker compose down"
   },
   "devDependencies": {
