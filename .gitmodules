@@ -1,0 +1,4 @@
+[submodule "aggregator"]
+	path = aggregator
+	url = https://github.com/SolidLabResearch/aggregator
+	branch = stream-support
