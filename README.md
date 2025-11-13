@@ -9,7 +9,111 @@ A repo for setting up and running the watch-party demo.
 - go
 
 ## Setup Demo:
+### 1. Clone (with submodules)
 
+This repo depends on the `aggregator` service as a Git submodule (branch `stream-support`). Clone with `--recursive` to fetch it automatically:
+
+```bash
+git clone --recursive https://github.com/SolidLabResearch/watch-party-demo.git
+cd watch-party-demo
+```
+
+If you already cloned without `--recursive`, initialize submodules now:
+
+```bash
+git submodule update --init --recursive
+```
+
+To pull the latest commits from the tracked submodule branch later:
+
+```bash
+git submodule update --remote --recursive
+git add aggregator
+git commit -m "chore: bump aggregator submodule"
+```
+
+### 2. Local development layout
+
+Submodule path: `aggregator` (tracking branch `stream-support`). You can enter it and run normal git commands:
+
+```bash
+cd aggregator
+git status
+```
+
+Switch to `main` in the future (optional):
+
+```bash
+cd aggregator
+git fetch origin
+git checkout main
+cd ..
+git config -f .gitmodules submodule.aggregator.branch main
+git add .gitmodules aggregator
+git commit -m "chore: switch aggregator submodule to main"
+```
+
+### 3. Build / run the Aggregator service
+
+If the aggregator repo provides a Dockerfile:
+
+```bash
+docker build -t aggregator:dev aggregator
+docker run --rm -p 5000:5000 aggregator:dev
+```
+
+Or (Go direct):
+
+```bash
+cd aggregator
+go mod download
+go run . --port 5000 --log-level error
+```
+
+Optional Docker Compose integration (add to `compose.yaml`):
+
+```yaml
+  aggregator:
+    build: ./aggregator
+    container_name: aggregator
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+```
+
+Then:
+
+```bash
+docker compose up -d aggregator
+```
+
+### 4. Updating all submodules routinely
+
+```bash
+git pull
+git submodule update --remote --recursive
+git add aggregator
+git commit -m "chore: update submodules"
+```
+
+### 5. Clean removal (if ever needed)
+
+```bash
+git submodule deinit -f aggregator
+git rm -f aggregator
+rm -rf .git/modules/aggregator
+git commit -m "chore: remove aggregator submodule"
+```
+
+### 6. Quick init helper (optional)
+
+```bash
+make init # (add a Makefile target that runs 'git submodule update --init --recursive')
+```
+
+---
+
+Proceed with the existing instructions below to start UMA servers, CSS pods, and the aggregator (now available locally under `./aggregator`). Adjust paths if you move the submodule.
 
 
 ## Uses
