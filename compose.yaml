@@ -1,0 +1,57 @@
+version: '3.9'
+services:
+  uma1:
+    image: uma:latest
+    environment:
+      BASE_URL: http://localhost:4000/uma
+      POLICY_BASE: http://localhost:3000
+      LOG_LEVEL: error
+    ports:
+      - '4000:4000'
+  css1:
+    image: css:latest
+    environment:
+      UMA_BASE: http://localhost:4000/
+      DATA_DIR: /data
+      LOG_LEVEL: error
+    volumes:
+      - ./data/server-0:/data
+    ports:
+      - '3000:3000'
+    depends_on:
+      - uma1
+  ui:
+    image: watch-party-ui:latest
+    volumes:
+      - /home/maarten/Documents/doctoraat/code/solid-watch-party/solid-watchparty:/app/solid-watchparty
+    ports:
+      - '8080:8080'
+    depends_on:
+      - css1
+  uma1_loopback:
+    image: alpine/socat
+    network_mode: service:css1
+    depends_on:
+      - uma1
+      - css1
+    command: |-
+      tcp-listen:4000,fork,reuseaddr,bind=127.0.0.1
+      tcp-connect:uma1:4000
+  css1_loopback:
+    image: alpine/socat
+    network_mode: service:uma1
+    depends_on:
+      - css1
+      - uma1
+    command: |-
+      tcp-listen:3000,fork,reuseaddr,bind=127.0.0.1
+      tcp-connect:css1:3000
+  ui_loopback_css1:
+    image: alpine/socat
+    network_mode: service:css1
+    depends_on:
+      - ui
+      - css1
+    command: |-
+      tcp-listen:8080,fork,reuseaddr,bind=127.0.0.1
+      tcp-connect:ui:8080

@@ -1,0 +1,9 @@
+# Generated datasets
+generated-*/
+generated-results/
+data/
+
+# Node
+node_modules/
+*.log
+
