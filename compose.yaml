@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   uma1:
-    image: uma:latest
+    image: maartyman/uma:latest
     environment:
       BASE_URL: http://localhost:4000/uma
       POLICY_BASE: http://localhost:3000
@@ -9,7 +9,7 @@ services:
     ports:
       - '4000:4000'
   css1:
-    image: css:latest
+    image: maartyman/css:latest
     environment:
       UMA_BASE: http://localhost:4000/
       DATA_DIR: /data
@@ -21,7 +21,7 @@ services:
     depends_on:
       - uma1
   ui:
-    image: watch-party-ui:latest
+    image: maartyman/watch-party-ui:latest
     ports:
       - '8080:8080'
     depends_on:

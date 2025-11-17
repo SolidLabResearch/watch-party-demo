@@ -23,6 +23,15 @@ export function updateCompose(composePath: string, dataDir: string) {
   compose.version = compose.version || '3.9';
   compose.services = ensure(compose.services, {});
 
+  // Ensure UI service exists so loopbacks can be added for every CSS container
+  if (!compose.services.ui) {
+    compose.services.ui = {
+      image: 'maartyman/watch-party-ui:latest',
+      ports: [ '8080:8080' ],
+      depends_on: [ 'css1' ],
+    };
+  }
+
   // Load servers
   const serversPath = path.join(dataDir, 'servers.json');
   if (!fs.existsSync(serversPath)) {
@@ -37,7 +46,7 @@ export function updateCompose(composePath: string, dataDir: string) {
 
     // Core services
     compose.services[umaName] = {
-      image: 'uma:latest',
+      image: 'maartyman/uma:latest',
       environment: {
         BASE_URL: `http://localhost:${s.umaPort}/uma`,
         POLICY_BASE: `http://localhost:${s.solidPort}`,
@@ -47,7 +56,7 @@ export function updateCompose(composePath: string, dataDir: string) {
     };
 
     compose.services[cssName] = {
-      image: 'css:latest',
+      image: 'maartyman/css:latest',
       environment: {
         UMA_BASE: `http://localhost:${s.umaPort}/`,
         DATA_DIR: '/data',
