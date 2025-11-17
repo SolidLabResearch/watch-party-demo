@@ -22,8 +22,6 @@ services:
       - uma1
   ui:
     image: watch-party-ui:latest
-    volumes:
-      - /home/maarten/Documents/doctoraat/code/solid-watch-party/solid-watchparty:/app/solid-watchparty
     ports:
       - '8080:8080'
     depends_on:
