@@ -26,6 +26,7 @@ Start the servers
 npm run start
 ```
 
+Demo should be available at http://localhost:8080/
 
 ## Uses
 This repo composes and sets up 3 different repositories to build the demo.
@@ -33,36 +34,61 @@ This repo composes and sets up 3 different repositories to build the demo.
 - https://github.com/SolidLabResearch/aggregator
 - https://github.com/SolidLabResearch/user-managed-access
 
-# we need nodejs, yarn, unzip, git, golang
+# Data generator
 
-# get uma + css from https://github.com/maartyman/user-managed-access/tree/query-aggregator-evaluation
-# cd into the repo
-# run yarn install
+The generator builds a complete Solid watch‑party dataset under an output folder (default: `./data`). It creates:
+- User profiles (`…/profile/card$.ttl`)
+- Rooms per host (`…/watchparties/myRooms/<room-id>/room$.ttl` and `register$.ttl`)
+- Per‑user message outboxes with synthetic messages (`…/watchparties/myMessages/MSG…$.ttl`)
+- Optional room thumbnails if you provide an images folder
+- A random YouTube trailer per room wired as a `schema:VideoObject` featured by an event, plus a paused `schema:SuspendAction` at location `"0"`
+- `servers.json` with ports/URLs to help wire Docker Compose
 
-# start 3 UMA servers
-# port 4000, 4001, 4002
-# cd into package/uma
-# node ./bin/main.js --port 4000 --base-url http://localhost:4000/uma --policy-base http://localhost:3000 --log-level error
+Run it like this:
 
-# start 3 css's
-# add zip to the image
-# unzip
-# port 3000, 3001, 3002
-# cd into package/css
-# yarn run community-solid-server -m . -c ./config/default.json -a http://localhost:4000/uma -f "${./zipdata/3000}" -p 3000 -l error
+```bash
+npm run generate -- --users 15 --partiesPerUser 1 --usersPerParty 15 --messagesPerUser 20
+```
 
-# start 1 aggregator
-# port 5000
-# get aggregator from https://github.com/SolidLabResearch/aggregator/tree/stream-support
-# cd into aggregator
-# run make minikube-start
-# run make containers-all
-# run make minikube-generate-key-pair
-# run go run . --port 5000 --log-level error --webid http://localhost:3000/alice/profile/card#me --email alice@example.org --password password
+Flags (all optional unless noted):
+- `--users <n>`
+	- Total number of users to create (default: 5)
+- `--partiesPerUser <n>`
+	- How many parties each user hosts (default: 2)
+- `--usersPerParty <n>`
+	- Total users per party including the host; participants are selected round‑robin (default: 3)
+- `--messagesPerUser <n>`
+	- Messages each participating user posts per party into their outbox (default: 5)
+- `--out <dir>`
+	- Output directory for generated data (default: `./data`)
+- `--messagesFile <path>`
+	- Optional path to a text file for message content; accepts either a JSON array of strings or newline‑separated text. A convenient default lives at `generator/assets/messages.txt`.
+- `--thumbnailsDir <path>`
+	- Optional path to a folder with images (png/jpg/jpeg/gif/webp). One image may be copied as the room thumbnail; its base filename is also used as the room’s semantic name.
+- `--help`
+	- Prints the generator help and exits.
 
-# make UI/website available
-# copy dist files
-# host the UI
+### Validate trailers (optional)
+
+We keep trailer links in `generator/assets/videos.txt`. You can validate and refresh this file with the trailer validator, which checks titles via YouTube oEmbed:
+
+```bash
+npm run -s trailers
+```
+
+What it does:
+- Fetches each URL’s title via oEmbed and verifies expected keywords.
+- Writes valid URLs (one per line) to `generator/assets/videos.txt`.
+- Prints any invalid URLs to stdout so you can review/replace them.
+
+### Generate compose from data (optional)
+
+After running the data generator, you can update `compose.yaml` based on `data/servers.json` so all CSS/UMA instances are wired correctly and can talk via localhost. It also forwards `localhost:5000` inside each container to the aggregator on your host.
+
+```bash
+node --loader ts-node/esm scripts/update-compose.ts compose.yaml data
+```
+
 
 ## common issues:
 If you already cloned without `--recursive`, initialize submodules now:
