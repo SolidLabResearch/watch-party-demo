@@ -26,7 +26,7 @@ export function updateCompose(composePath: string, dataDir: string) {
   // Ensure UI service exists so loopbacks can be added for every CSS container
   if (!compose.services.ui) {
     compose.services.ui = {
-      image: 'maartyman/watch-party-ui:latest',
+      image: 'maartyman/watch-party-ui:v1.0.1',
       ports: [ '8080:8080' ],
       depends_on: [ 'css1' ],
     };
@@ -46,7 +46,7 @@ export function updateCompose(composePath: string, dataDir: string) {
 
     // Core services
     compose.services[umaName] = {
-      image: 'maartyman/uma:latest',
+      image: 'maartyman/uma:v1',
       environment: {
         BASE_URL: `http://localhost:${s.umaPort}/uma`,
         POLICY_BASE: `http://localhost:${s.solidPort}`,
@@ -56,7 +56,7 @@ export function updateCompose(composePath: string, dataDir: string) {
     };
 
     compose.services[cssName] = {
-      image: 'maartyman/css:latest',
+      image: 'maartyman/css:v1',
       environment: {
         UMA_BASE: `http://localhost:${s.umaPort}/`,
         DATA_DIR: '/data',
