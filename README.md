@@ -1,6 +1,8 @@
 # watch-party-demo
 A repo for setting up and running the watch-party demo.
 
+[![Watch the video]](https://vimeo.com/1138085565?share=copy&fl=sv&fe=ci)
+
 ## Requirements:
 - docker
 - docker compose
