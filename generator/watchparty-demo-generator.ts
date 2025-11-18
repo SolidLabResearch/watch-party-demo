@@ -154,7 +154,8 @@ export class DemoWatchpartyGenerator extends WatchpartyDataGenerator {
   }
 
   private writeRoom(hostCtx: PodContext, roomId: string, participants: PodContext[]) {
-    const startDate = new Date(Date.now() + Math.floor(Math.random() * 10000000000)).toISOString();
+    // Ensure room start dates are not in the future (pick a time up to ~115 days in the past)
+    const startDate = new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString();
     const hostUrl = hostCtx.baseUrl;
 
     // Build attendees and subjectOf lists
@@ -200,8 +201,14 @@ export class DemoWatchpartyGenerator extends WatchpartyDataGenerator {
     const videoId = this.randomFragmentId();
     const eventId = this.randomFragmentId();
     const controlId = this.randomFragmentId();
-    const eventStart = new Date().toISOString();
-    const controlStart = new Date(Date.now() + 10000).toISOString(); // 10s later
+    // Choose an event start time in the recent past (within ~2 hours)
+    const now = Date.now();
+    const eventStartMs = now - Math.floor(Math.random() * 2 * 60 * 60 * 1000);
+    // Control action happens after event start but still in the past (0-10 min after)
+    const controlDelta = Math.floor(Math.random() * 10 * 60 * 1000);
+    const controlStartMs = Math.min(eventStartMs + controlDelta, now - 1000);
+    const eventStart = new Date(eventStartMs).toISOString();
+    const controlStart = new Date(controlStartMs).toISOString();
     ttl += `
 <#${videoId}> a <http://schema.org/VideoObject>;
   <http://schema.org/contentUrl> <${videoUrl}>.
@@ -235,10 +242,16 @@ export class DemoWatchpartyGenerator extends WatchpartyDataGenerator {
     // Build message URIs list and message bodies
     const messageIds: string[] = [];
     let messagesTtl = '';
+    // Pick a base time in the past (within ~2 days), then increment per message
+    const now = Date.now();
+    let t = now - Math.floor(Math.random() * 2 * 24 * 60 * 60 * 1000);
     for (let j = 1; j <= messagesPerUser; j++) {
       const mid = `message-${participantCtx.name}-${j}`;
       messageIds.push(mid);
-      const date = new Date(Date.now() + Math.floor(Math.random() * 10000000000)).toISOString();
+      // Each message is 10-90 seconds after the previous one, but never in the future
+      const step = 10000 + Math.floor(Math.random() * 80000);
+      t = Math.min(t + step, now - 1000);
+      const date = new Date(t).toISOString();
       const text = this.pickMessageText(j, participantCtx.name);
       messagesTtl += `\n<#${mid}> a <http://schema.org/Message>;
     <http://schema.org/sender> <${participantUrl}/profile/card#me>;
@@ -295,7 +308,8 @@ export class DemoWatchpartyGenerator extends WatchpartyDataGenerator {
 
   private encodeUrlForFragment(url: string): string {
     // mimic simple flattening like the example: remove protocol markers and punctuation
-    return url.replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+    // but preserve hyphens so room ids like `room-user8-1` keep their dashes
+    return url.replace(/[^A-Za-z0-9-]/g, '').toLowerCase();
   }
 
   private computeMessageBoxId(hostCtx: PodContext, roomId: string): string {
