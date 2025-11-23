@@ -1,7 +1,7 @@
 # watch-party-demo
 A repo for setting up and running the watch-party demo.
 
-[<img width="1171" height="661" alt="image" src="https://github.com/user-attachments/assets/c8b6db05-3d0d-4816-b8d1-463bde5cc270" />](https://vimeo.com/1139787883?share=copy&fl=sv&fe=ci)
+[<img width="1171" height="636" alt="thumbnail" src="https://github.com/user-attachments/assets/e6838917-5184-40f7-858a-ce7a78f51d4a" />](https://vimeo.com/1139787883?share=copy&fl=sv&fe=ci)
 
 ## Requirements:
 - docker
